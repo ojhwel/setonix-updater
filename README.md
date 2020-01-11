@@ -21,16 +21,13 @@ It's currently a work in progress.
 - Call `UpdateHelper.CheckForUpdate()`; if this returns `true`, ask your users whether they want to update (or just do it during startup or shutdown, depending
   on how draconian you want/need to be)
 - Call `UpdateHelper.DownloadUpdate()`; this returns a `DirectoryInfo` instance pointing to a temp folder where the ZIP has been decompessed to
-- Start Setonix Updater with the following command line:
-  - **required first argument**: The process ID of your application (so Setonix Updater can determine if it is still running), which you normally retrieve via 
-    `System.Diagnostics.Process.GetCurrentProcess().Id`
-  - **required second argument**: the path of the temp folder returned by `DownloadUpdate()` earlier. This is where `setonix_updater.exe` is run from.
-  - **required third argument**: the path of your application, which is where the updated files are copied to.
-    `System.Reflection.Assembly.GetExecutingAssembly().Location` is your friend.
-  - any other command line arguments you want your application to be restarted with. These should normally be the ones the 
-    current instance was started with. If you add `using SetonixUpdater.Extensions;` to your code, you get an extension method `ConcatenateAll()` that you can 
-    call on the `args` parameter of `public static void Main()` to get them all as one string
-- Quit your application, normally `Application.Exit(); return;`
+- Start the update by calling `updateHelper.StartUpdate(System.Diagnostics.Process.GetCurrentProcess().Id, 
+  System.Reflection.Assembly.GetExecutingAssembly().Location);`
+- Quit your application:
+  ```C#
+  Application.Exit();
+  return;
+  ```
 
 ### What Happens Then
 

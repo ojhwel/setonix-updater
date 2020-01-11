@@ -2,10 +2,12 @@
 using SetonixUtils;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Net;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
@@ -22,6 +24,8 @@ namespace SetonixUpdater.Download
         public string VersionListUrl { get; set; }
 
         public VersionInfo CurrentVersion { get; private set; }
+
+        public DirectoryInfo TemporaryFolder { get; private set; }
 
         public UpdateHelper(Version localVersion, string versionListUrl)
         {
@@ -59,7 +63,7 @@ namespace SetonixUpdater.Download
             }
         }
 
-        public DirectoryInfo DownloadUpdate()
+        public bool DownloadUpdate()
         {
             if (CurrentVersion == null)
                 throw new InvalidOperationException("Current version has not been determined");
@@ -70,9 +74,9 @@ namespace SetonixUpdater.Download
                 if (!DownloadFile(CurrentVersion.Url, updateFile.FullName))
                     throw new UpdateException("Error downloading update from " + CurrentVersion.Url);
 
-                DirectoryInfo updateDirectory = GetTempFolder("setonix_update");
-                ZipFile.ExtractToDirectory(updateFile.FullName, updateDirectory.FullName);
-                return updateDirectory;
+                TemporaryFolder = GetTempFolder("setonix_update");
+                ZipFile.ExtractToDirectory(updateFile.FullName, TemporaryFolder.FullName);
+                return true;
             }
             finally
             {
@@ -83,6 +87,25 @@ namespace SetonixUpdater.Download
                 catch (Exception)
                 { }
             }
+            return false;
+        }
+
+        public void StartUpdate(int processID, string executable)
+        {
+            StartUpdate(processID, executable, null);
+        }
+
+        public void StartUpdate(int processID, string executable, string[] args)
+        {
+            FileInfo updater = new FileInfo(TemporaryFolder + "\\setonix_updater.exe");
+            if (!updater.Exists)
+                throw new FileNotFoundException(updater.FullName);
+
+            string arguments = processID.ToString() + " \"" + Path.GetDirectoryName(executable) + "\"";
+            if (args != null)
+                arguments += " " + args.ConcatenateAll();
+
+            Process.Start(updater.FullName, arguments);
         }
 
         public static string[] HandleTempFolderCleanup(string[] args)

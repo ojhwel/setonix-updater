@@ -15,19 +15,16 @@ namespace SetonixUpdater
 
         public readonly int CallingProcessID;
 
-        public readonly System.IO.DirectoryInfo UpdatePath;
-
         public readonly string ApplicationPath;
 
         public readonly string Language;
 
         public string[] AdditionalArguments;
 
-        internal ArgumentResult(int callingProcessID, System.IO.DirectoryInfo updatePath, string applicationPath, string language)
+        internal ArgumentResult(int callingProcessID, string applicationPath, string language)
         {
             IsValid = true;
             CallingProcessID = callingProcessID;
-            UpdatePath = updatePath;
             ApplicationPath = applicationPath;
             Language = language;
         }

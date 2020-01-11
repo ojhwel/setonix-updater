@@ -35,10 +35,11 @@ namespace SetonixUpdater
                 return;
             }
 
+            string updatePath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             UpdateManifest manifest = null;
             try
             {
-                manifest = UpdateManifest.FromFile(arguments.UpdatePath + "\\update.manifest");
+                manifest = UpdateManifest.FromFile(updatePath + "\\update.manifest");
             }
             catch (Exception)
             {
@@ -74,7 +75,7 @@ namespace SetonixUpdater
                     // Nothing to do (the process was not found, which means the application is closed)
                 }
 
-                Updater updater = new Updater(manifest, arguments.UpdatePath.FullName, updateForm.SetFileName);
+                Updater updater = new Updater(manifest, updatePath, updateForm.SetFileName);
                 try
                 {
                     updater.PerformUpdates();
@@ -87,7 +88,7 @@ namespace SetonixUpdater
                 }
 
                 Process.Start(arguments.ApplicationPath, arguments.GetAdditionalArgumentsAsString() + " " + 
-                                                         Download.UpdateHelper.TempFolderCleanupArgument + arguments.UpdatePath);
+                                                         Download.UpdateHelper.TempFolderCleanupArgument + updatePath);
                 Application.Exit();
             }
         }
@@ -113,7 +114,6 @@ namespace SetonixUpdater
 
             bool ok = true;
             int callingProcessID = -1;
-            DirectoryInfo updatePath = null;
             string applicationPath = string.Empty;
             string language = string.Empty;
             int languageIndex = -1;
@@ -139,23 +139,12 @@ namespace SetonixUpdater
             }
 
             ok = ok && args.Length >= REQUIRED_ARGUMENTS;
-            ok = ok && int.TryParse(args[0], out callingProcessID);
             if (ok)
                 try
                 {
-                    updatePath = new DirectoryInfo(args[1]);
-                    ok = updatePath.Exists;
-                }
-                catch (Exception)
-                {
-                    ok = false;
-                }
-            if (ok)
-                try
-                {
-                    FileInfo file = new FileInfo(args[2]);
+                    FileInfo file = new FileInfo(args[1]);
                     if (file.Exists)
-                        applicationPath = args[2];
+                        applicationPath = args[1];
                     else
                         ok = false;
                 }
@@ -165,7 +154,7 @@ namespace SetonixUpdater
                 }
             if (ok)
             { 
-                ArgumentResult result = new ArgumentResult(callingProcessID, updatePath, applicationPath, language);
+                ArgumentResult result = new ArgumentResult(callingProcessID, applicationPath, language);
 
                 int addlArgsCount = args.Length - REQUIRED_ARGUMENTS - (languageIndex >= 0 ? 1 : 0);
                 if (addlArgsCount > 0)
