@@ -142,4 +142,7 @@
     <value>The update cannot be performed while {0} is running. Please close all windows and press "Retry."</value>
     <comment>0: app name</comment>
   </data>
+  <data name="Preparing" xml:space="preserve">
+    <value>Preparing...</value>
+  </data>
 </root>

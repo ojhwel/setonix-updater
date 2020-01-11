@@ -35,7 +35,7 @@ namespace SetonixUpdater
         {
             fileLabel.Text = fileName;
             if (!initialUpdate)
-                progressBar.Value++;
+                progressBar.Increment(1);
             else
                 initialUpdate = false;
             Application.DoEvents();

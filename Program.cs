@@ -51,6 +51,7 @@ namespace SetonixUpdater
             using (UpdateForm updateForm = new UpdateForm())
             {
                 updateForm.Show(manifest.Strings["title"], manifest.Strings["wait"], manifest.Tasks.Count);
+                updateForm.SetFileName(TextResources.Preparing);
                 try
                 {
                     Process appProcess = Process.GetProcessById(arguments.CallingProcessID);
@@ -75,7 +76,7 @@ namespace SetonixUpdater
                     // Nothing to do (the process was not found, which means the application is closed)
                 }
 
-                Updater updater = new Updater(manifest, updatePath, updateForm.SetFileName);
+                Updater updater = new Updater(manifest.Tasks, updatePath, Path.GetDirectoryName(arguments.ApplicationPath), updateForm.SetFileName);
                 try
                 {
                     updater.PerformUpdates();
@@ -110,7 +111,7 @@ namespace SetonixUpdater
 
         private static ArgumentResult CheckArguments(string[] args)
         {
-            const int REQUIRED_ARGUMENTS = 3;
+            const int REQUIRED_ARGUMENTS = 2;
 
             bool ok = true;
             int callingProcessID = -1;

@@ -31,7 +31,10 @@ namespace SetonixUpdater
 
         internal string GetAdditionalArgumentsAsString()
         {
-            return AdditionalArguments.ConcatenateAll();
+            if (AdditionalArguments != null)
+                return AdditionalArguments.ConcatenateAll();
+            else
+                return string.Empty;
         }
 
         private ArgumentResult()

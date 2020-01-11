@@ -13,25 +13,24 @@ namespace SetonixUpdater
     // TODO Comments
     internal class Updater
     {
-        private readonly UpdateManifest manifest;
-
+        private readonly IEnumerable<IUpdateTask> tasks;
         private readonly string targetPath;
         private readonly string sourcePath;
         private readonly SetFileNameDelegate fileNameDelegate;
 
         internal delegate void SetFileNameDelegate(string fileName);
 
-        internal Updater(UpdateManifest manifest, string updatePath, SetFileNameDelegate fileNameDelegate)
+        internal Updater(IEnumerable<IUpdateTask> tasks, string sourcePath, string targetPath, SetFileNameDelegate fileNameDelegate)
         {
-            this.manifest = manifest;
-            sourcePath = updatePath;
+            this.tasks = tasks;
+            this.sourcePath = sourcePath;
+            this.targetPath = targetPath;
             this.fileNameDelegate = fileNameDelegate;
-            targetPath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
         }
 
         internal void PerformUpdates()
         {
-            foreach (IUpdateTask task in manifest.Tasks)
+            foreach (IUpdateTask task in tasks)
                 if (task is UpdateFileTask fileTask)
                 {
                     fileNameDelegate?.Invoke(fileTask.FileName);

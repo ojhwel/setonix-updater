@@ -123,5 +123,14 @@ namespace SetonixUpdater.Resources {
                 return ResourceManager.GetString("PleaseClose", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Preparing....
+        /// </summary>
+        internal static string Preparing {
+            get {
+                return ResourceManager.GetString("Preparing", resourceCulture);
+            }
+        }
     }
 }

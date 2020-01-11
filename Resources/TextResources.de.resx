@@ -142,4 +142,7 @@
     <value>Die Aktualisierung kann nicht durchgeführt werden, während {0} ausgeführt wird. Bitte schließe alle Fenster und klick auf "Wiederholen".</value>
     <comment>0: app name</comment>
   </data>
+  <data name="Preparing" xml:space="preserve">
+    <value>Vorbereitung...</value>
+  </data>
 </root>

@@ -101,7 +101,7 @@ namespace SetonixUpdater.Download
             if (!updater.Exists)
                 throw new FileNotFoundException(updater.FullName);
 
-            string arguments = processID.ToString() + " \"" + Path.GetDirectoryName(executable) + "\"";
+            string arguments = processID.ToString() + " \"" + executable + "\"";
             if (args != null)
                 arguments += " " + args.ConcatenateAll();
 
