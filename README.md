@@ -28,6 +28,9 @@ It's currently a work in progress.
   Application.Exit();
   return;
   ```
+- If you add the line `args = UpdateHelper.HandleTempFolderCleanup(args)` to the startup code of your application before you start doing anything with the
+  command line arguments, the temp folder will be cleaned. (If you **don't** do this, you will find a `--setonix-cleanup` argument which 
+  `HandleTempFolderCleanup()` removes.)
 
 ### What Happens Then
 
