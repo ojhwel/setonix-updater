@@ -15,6 +15,8 @@ namespace SetonixUpdater.Download
     // TODO Comment
     public sealed class UpdateHelper
     {
+        public const string TempFolderCleanupArgument = "--setonix-cleanup=";
+
         public Version LocalVersion { get; set; }
 
         public string VersionListUrl { get; set; }
@@ -80,6 +82,39 @@ namespace SetonixUpdater.Download
                 }
                 catch (Exception)
                 { }
+            }
+        }
+
+        public static string[] HandleTempFolderCleanup(string[] args)
+        {
+            List<string> result = new List<string>();
+            foreach (string arg in args)
+                if (arg.ToLower().StartsWith(TempFolderCleanupArgument))
+                    RemoveTempFolder(arg);
+                else
+                    result.Add(arg);
+            return result.ToArray();
+        }
+
+        private static bool RemoveTempFolder(string arg)
+        {
+            try
+            {
+                string folder;
+                if (arg.ToLower().StartsWith(TempFolderCleanupArgument))
+                    folder = arg.Substring(TempFolderCleanupArgument.Length);
+                else
+                    return false;
+                if (!folder.StartsWith(Path.GetTempPath()))
+                    return false;
+                DirectoryInfo di = new DirectoryInfo(folder);
+                if (di.Exists)
+                    di.Delete(true);
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
             }
         }
 

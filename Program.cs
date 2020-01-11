@@ -86,7 +86,8 @@ namespace SetonixUpdater
                     return;
                 }
 
-                Process.Start(arguments.ApplicationPath, arguments.GetAdditionalArgumentsAsString());
+                Process.Start(arguments.ApplicationPath, arguments.GetAdditionalArgumentsAsString() + " " + 
+                                                         Download.UpdateHelper.TempFolderCleanupArgument + arguments.UpdatePath);
                 Application.Exit();
             }
         }

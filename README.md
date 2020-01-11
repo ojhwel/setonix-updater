@@ -50,14 +50,15 @@ An XML file on your server:
 <?xml version="1.0" encoding="utf-8" ?>
 <versions>
     <version id="1.0.0.1138">
-    <name>1.0 beta</name>
-    <release-date>2010-01-08</release-date>
-    <url>http://your_link_here/app_1.0.0.1138.zip</url>
+        <name>1.0 beta</name>
+        <release-date>2010-01-08</release-date>
+        <url>http://your_link_here/app_1.0.0.1138.zip</url>
     </version>
 </versions>    
 ```
 
-You can theretically have more than one version in the file. The one with the highest version number and the newest release date is used.
+You can theretically have more than one version in the file. The one with the highest version number **and** the newest release date is used. If the version 
+with the highest version number is not the one with the newest release date, nothing is done.
 
 
 ### Update ZIP file
