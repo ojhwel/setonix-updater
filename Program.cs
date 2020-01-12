@@ -158,6 +158,9 @@ namespace SetonixUpdater
 
             ok = ok && args.Length >= REQUIRED_ARGUMENTS;
 
+            // Process ID
+            ok = ok && int.TryParse(args[0], out callingProcessID);
+
             // Application path
             if (ok)
                 try
