@@ -96,6 +96,9 @@ namespace SetonixUpdater.Download
         /// <exception cref="VersionParseException">Thrown if the string could not be parsed as a version.</exception>
         public static Version Parse(string versionNumber)
         {
+            if (versionNumber == null)
+                throw new VersionParseException();
+
             string[] segments = versionNumber.Split('.');
             if (segments.Length < 2 || segments.Length > 4)
                 throw new VersionParseException();
@@ -108,14 +111,16 @@ namespace SetonixUpdater.Download
                 result.Minor = minor;
             else
                 throw new VersionParseException();
-            if (segments.Length >= 3 && ushort.TryParse(segments[2], out ushort revision))
-                result.Revision = revision;
-            else
-                throw new VersionParseException();
-            if (segments.Length >= 4 && ushort.TryParse(segments[3], out ushort build))
-                result.Build = build;
-            else
-                throw new VersionParseException();
+            if (segments.Length >= 3)
+                if (ushort.TryParse(segments[2], out ushort revision))
+                    result.Revision = revision;
+                else
+                    throw new VersionParseException();
+            if (segments.Length >= 4)
+                if (ushort.TryParse(segments[3], out ushort build))
+                    result.Build = build;
+                else
+                    throw new VersionParseException();
             return result;
         }
 
@@ -139,13 +144,6 @@ namespace SetonixUpdater.Download
                 return false;
             }
         }
-
-        /// <summary>
-        /// Creates a new <c>Version</c> instance from a <see cref="System.Version"/>.
-        /// </summary>
-        /// <param name="version">The <c>System.Version</c> instance.</param>
-        /// <returns>A new <c>Version</c> instance from the <see cref="System.Version"/>.</returns>
-        public static Version From(System.Version version) => new Version((ushort)version.Major, (ushort)version.Minor, (ushort)version.Revision, (ushort)version.Build);
 
         #endregion
 
@@ -221,8 +219,8 @@ namespace SetonixUpdater.Download
             if (segments <= 0 || segments > 4)
                 throw new ArgumentException();
 
-            StringBuilder result = new StringBuilder(Major);
-            if (segments >= 2 && Minor >= 0)
+            StringBuilder result = new StringBuilder(Major.ToString());
+            if (segments >= 2)
                 result.Append(".").Append(Minor);
             if (segments >= 3 && Revision != null)
                 result.Append(".").Append(Revision);

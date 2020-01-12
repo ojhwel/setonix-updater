@@ -9,7 +9,7 @@ namespace SetonixUpdater.Download
     /// <summary>
     /// Thrown if a version number string could not be parsed.
     /// </summary>
-    class VersionParseException : Exception
+    public class VersionParseException : Exception
     {
         public VersionParseException()
         { }
