@@ -119,7 +119,7 @@ namespace SetonixUpdater.Download
                     Logger.Error("Current version is null");
                     throw new UpdateCheckException("Unable to determine current version");
                 }
-                Logger.Debug("Current version is: " + CurrentVersion.ToString());
+                Logger.Debug("Current version is: " + CurrentVersion.Version);
                 return CurrentVersion.Version.IsNewerThan(LocalVersion);
             }
             catch (Exception e)
@@ -441,7 +441,7 @@ namespace SetonixUpdater.Download
                     if (newestDate == null || vi.ReleaseDate > newestDate)
                         newestDate = vi.ReleaseDate;
                 }
-                Logger.Debug("Highest version: " + highestVersion + " (date: " + highestVersion.ReleaseDate + ")");
+                Logger.Debug("Highest version: " + highestVersion.Version + " (date: " + highestVersion.ReleaseDate + ")");
                 Logger.Debug("Newest date: " + newestDate);
                 if (newestDate == highestVersion.ReleaseDate)
                     return highestVersion;
@@ -457,7 +457,7 @@ namespace SetonixUpdater.Download
 
         private static void CreateLogger()
         {
-            Logger = new Slogger(Path.GetTempPath(), "setonix_updater.log") { LogLevel = LogLevel.Debug };
+            Logger = new Slogger(Path.GetTempPath(), "setonix_updater.log");
         }
 
         #endregion

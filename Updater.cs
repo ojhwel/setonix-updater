@@ -82,6 +82,9 @@ namespace SetonixUpdater
             FileInfo oldFile = new FileInfo(targetPath + "\\" + task.Path);
             if (oldFile.Exists)
                 FileSystem.DeleteFile(oldFile.FullName, UIOption.OnlyErrorDialogs, RecycleOption.SendToRecycleBin);
+            DirectoryInfo dir = new DirectoryInfo(oldFile.DirectoryName);
+            if (!dir.Exists)
+                dir.Create();
             newFile.CopyTo(oldFile.FullName);
         }
     }

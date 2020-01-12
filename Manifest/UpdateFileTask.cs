@@ -19,17 +19,7 @@ namespace SetonixUpdater.Manifest
         /// <summary>
         /// The name of the file to update.
         /// </summary>
-        public string FileName
-        {
-            get
-            {
-                string result = System.IO.Path.GetDirectoryName(Path);
-                if (result.Length > 0)
-                    return result;
-                else
-                    return Path;
-            }
-        }
+        public string FileName => System.IO.Path.GetFileName(Path);
 
         /// <summary>
         /// Creates a new UpdateFileTask instance.

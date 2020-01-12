@@ -13,7 +13,8 @@ namespace SetonixUpdater
         Warn = 1, 
         Info = 2, 
         Debug = 3,
-        Trace = 4
+        Trace = 4,
+        Undefined = 99
     };
 
     internal class Slogger
@@ -22,7 +23,7 @@ namespace SetonixUpdater
 
         private string fileName;
 
-        public LogLevel LogLevel = LogLevel.Error;
+        public LogLevel LogLevel = LogLevel.Undefined;
 
         internal Slogger(string path, string fileName)
         {
@@ -32,13 +33,17 @@ namespace SetonixUpdater
 
         public void Log(string message, LogLevel logLevel)
         {
+            if (LogLevel == LogLevel.Undefined)
+                AutoDetermineLogLevel();
+
             if (logLevel <= LogLevel)
             {
                 StreamWriter wr = null;
                 try
                 {
-                    wr = new StreamWriter(GetFileName());
-                    wr.WriteLine(DateTime.Now.ToString("hh:mm:ss:fff") + "  " + GetLogLevel(logLevel) + "  " + message);
+                    wr = new StreamWriter(GetFileName(), true);
+                    wr.WriteLine(DateTime.Now.ToString("HH:mm:ss:fff") + "  " + GetLogLevel(logLevel) + "  " + message);
+                    wr.Flush();
                 }
                 catch (Exception)
                 { }
@@ -58,7 +63,40 @@ namespace SetonixUpdater
 
         private string GetFileName()
         {
-            return path + Path.GetFileNameWithoutExtension(fileName) + "_" + DateTime.Now.ToString("yyyy-MM-dd") + "." + Path.GetExtension(fileName);
+            return path + Path.GetFileNameWithoutExtension(fileName) + "_" + DateTime.Now.ToString("yyyy-MM-dd") + Path.GetExtension(fileName);
+        }
+
+        private void AutoDetermineLogLevel()
+        {
+            DirectoryInfo tempDir = new DirectoryInfo(Path.GetTempPath());
+            LogLevel logLevel = LogLevel.Error;
+            foreach (FileInfo file in tempDir.GetFiles("setonix_loglevel.*"))
+            {
+                LogLevel l = ParseLogLevel(Path.GetExtension(file.Name));
+                if (l != LogLevel.Undefined && l > logLevel)
+                    logLevel = l;
+            }
+            LogLevel = logLevel;
+        }
+
+        private LogLevel ParseLogLevel(string text)
+        {
+            switch (text.Trim().ToLower())
+            {
+                case ".error":
+                    return LogLevel.Error;
+                case ".warn":
+                    return LogLevel.Warn;
+                case ".info":
+                    return LogLevel.Info;
+                case ".debug":
+                    return LogLevel.Debug;
+                case ".trace":
+                    return LogLevel.Trace;
+                default:
+                    return LogLevel.Undefined;
+            }
+            
         }
 
         private string GetLogLevel(LogLevel logLevel)

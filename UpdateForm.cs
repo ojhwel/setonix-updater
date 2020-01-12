@@ -48,7 +48,7 @@ namespace SetonixUpdater
         {
             fileLabel.Text = fileName;
             if (!initialUpdate)
-                progressBar.Increment(1);
+                progressBar.Value = progressBar.Value + 1;
             else
                 initialUpdate = false;
             // TODO I'm not sure that does the trick. I've never seen progress past 10 %

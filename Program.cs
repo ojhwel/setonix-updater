@@ -30,8 +30,7 @@ namespace SetonixUpdater
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 
-            // TODO Set log level if there is a file named like "log.debug" (you get the idea) in the same folder as setonix_updater.exe
-            Logger = new Slogger(Path.GetTempPath(), "setonix_updater.log") { LogLevel = LogLevel.Debug };
+            Logger = new Slogger(Path.GetTempPath(), "setonix_updater.log");
 
             // Check command line arguments
             ArgumentResult arguments = CheckArguments(args);
@@ -111,7 +110,7 @@ namespace SetonixUpdater
                 }
                 catch (UpdateException e)
                 {
-                    Logger.Error("Updat error: " + e.Message);
+                    Logger.Error("Update error: " + e.Message);
                     MessageBox.Show(e.Message, TextResources.ErrorMsgBoxTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
                     Application.Exit();
                     return;
@@ -242,7 +241,7 @@ namespace SetonixUpdater
                         if (i >= REQUIRED_ARGUMENTS && i != languageIndex)
                             addlArgs[a++] = args[i];
                     result.AdditionalArguments = addlArgs;
-                    Logger.Debug("Additional arguments: " + addlArgs);
+                    Logger.Debug("Additional arguments: " + addlArgs.ConcatenateAll());
                 }
                 return result;
             }
