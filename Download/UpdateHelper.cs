@@ -29,6 +29,8 @@ namespace SetonixUpdater.Download
     /// </summary>
     public class UpdateHelper
     {
+        private static Slogger Logger;
+
         #region Public properties
 
         /// <summary>
@@ -68,8 +70,10 @@ namespace SetonixUpdater.Download
         /// <param name="versionListUrl">The HTTP URL of the version list file.</param>
         public UpdateHelper(Version localVersion, string versionListUrl)
         {
+            CreateLogger();
             LocalVersion = localVersion;
             VersionListUrl = versionListUrl;
+            Logger.Debug("UpdateHelper created with local version \"" + localVersion + "\" and URL \"" + versionListUrl + "\"");
         }
 
         /// <summary>
@@ -80,8 +84,11 @@ namespace SetonixUpdater.Download
         /// <exception cref="VersionParseException">Thrown if the <c>localVersion</c> parameter cannot be parsed into a <see cref="Version"/></exception>
         public UpdateHelper(string localVersion, string versionListUrl)
         {
+            CreateLogger();
+            Logger.Debug("Local version argument: " + localVersion);
             LocalVersion = Version.Parse(localVersion);
             VersionListUrl = versionListUrl;
+            Logger.Debug("UpdateHelper created with local version \"" + localVersion + "\" and URL \"" + versionListUrl + "\"");
         }
 
         #endregion
@@ -95,17 +102,24 @@ namespace SetonixUpdater.Download
         /// <exception cref="UpdateCheckException">Thrown if the version list file could not be read.</exception>
         public bool CheckForUpdates()
         {
-            FileInfo versionFile = new FileInfo(Path.GetTempFileName());
+            string tempFileName = Path.GetTempFileName();
+            Logger.Debug("Version list temp file name: " + tempFileName);
+            FileInfo versionFile = new FileInfo(tempFileName);
             try
             {
                 if (!DownloadFile(VersionListUrl, versionFile.FullName))
                 {
                     CurrentVersion = null;
+                    Logger.Error("DownloadFile returned false");
                     throw new UpdateCheckException("Unable to download version information");
                 }
                 CurrentVersion = GetCurrentVersion(versionFile);
                 if (CurrentVersion == null)
+                {
+                    Logger.Error("Current version is null");
                     throw new UpdateCheckException("Unable to determine current version");
+                }
+                Logger.Debug("Current version is: " + CurrentVersion.ToString());
                 return CurrentVersion.Version.IsNewerThan(LocalVersion);
             }
             catch (Exception e)
@@ -116,10 +130,13 @@ namespace SetonixUpdater.Download
             {
                 try
                 {
+                    Logger.Trace("Deleting temp file");
                     versionFile?.Delete();
                 }
-                catch (Exception)
-                { }
+                catch (Exception e)
+                {
+                    Logger.Info("Error deleting temp file: " + e.Message);
+                }
             }
         }
 
@@ -133,35 +150,49 @@ namespace SetonixUpdater.Download
         public bool DownloadUpdate()
         {
             if (CurrentVersion == null)
+            {
+                Logger.Error("CurrentVersion not set");
                 throw new InvalidOperationException("Current version has not been determined");
+            }
 
-            FileInfo updateFile = new FileInfo(Path.GetTempFileName());
+            string tempFileName = Path.GetTempFileName();
+            Logger.Debug("ZIP temp file name: " + tempFileName);
+            FileInfo updateFile = new FileInfo(tempFileName);
             try
             {
                 // TODO Having these exceptions could be useful
                 if (!DownloadFile(CurrentVersion.Url, updateFile.FullName))
+                {
+                    Logger.Error("DownloadFile returned false");
                     throw new UpdateException("Error downloading update from " + CurrentVersion.Url);
+                }
 
                 TemporaryFolder = GetTempFolder("setonix_update");
+                Logger.Debug("Unzipping to: " + TemporaryFolder);
                 ZipFile.ExtractToDirectory(updateFile.FullName, TemporaryFolder.FullName);
+                Logger.Trace("Unzipping finished");
                 return true;
             }
             catch (UpdateException e)
             {
                 throw e;
             }
-            catch (Exception)
+            catch (Exception e)
             {
+                Logger.Error("Error downloading/unzippung update: " + e.Message);
                 return false;
             }
             finally
             {
                 try
                 {
+                    Logger.Trace("Deleting temp file");
                     updateFile?.Delete();
                 }
-                catch (Exception)
-                { }
+                catch (Exception e)
+                {
+                    Logger.Info("Error deleting temp file: " + e.Message);
+                }
             }
         }
 
@@ -190,13 +221,27 @@ namespace SetonixUpdater.Download
         {
             FileInfo updater = new FileInfo(TemporaryFolder + "\\setonix_updater.exe");
             if (!updater.Exists)
+            {
+                Logger.Error("Updater doesn't exist: " + updater.FullName);
                 throw new FileNotFoundException(updater.FullName);
+            }
+            else
+                Logger.Debug("Updater found: " + updater.FullName);
 
             string arguments = processID.ToString() + " \"" + executable + "\"";
             if (args != null)
                 arguments += " " + args.ConcatenateAll();
+            Logger.Debug("Command line: \"" + arguments + "\"");
 
-            Process.Start(updater.FullName, arguments);
+            try
+            {
+                Logger.Trace("Starting updater");
+                Process.Start(updater.FullName, arguments);
+            }
+            catch (Exception e)
+            {
+                Logger.Error("Unable to start updater: " + e.Message);
+            }
         }
 
         /// <summary>
@@ -211,10 +256,15 @@ namespace SetonixUpdater.Download
         /// <returns>The command line arguments passed into the methods, minus the temporary folder cleanup argument if it was present.</returns>
         public static string[] HandleTempFolderCleanup(string[] args)
         {
+            CreateLogger();
+            Logger.Trace("Entering HandleTempFolderCleanup");
             List<string> result = new List<string>();
             foreach (string arg in args)
                 if (arg.ToLower().StartsWith(TempFolderCleanupArgument))
+                {
+                    Logger.Debug("Found cleanup argument: \"" + arg + "\"");
                     RemoveTempFolder(arg);
+                }
                 else
                     result.Add(arg);
             return result.ToArray();
@@ -231,22 +281,36 @@ namespace SetonixUpdater.Download
         /// <returns><c>true</c> of the path was deleted, otherwise <c>false</c>.</returns>
         private static bool RemoveTempFolder(string path)
         {
+            Logger?.Debug("Removing temp folder: \"" + path + "\"");
             try
             {
                 string folder;
                 if (path.ToLower().StartsWith(TempFolderCleanupArgument))
                     folder = path.Substring(TempFolderCleanupArgument.Length);
                 else
+                {
+                    Logger?.Error("Not a cleanup argument: \"" + path + "\"");
                     return false;
+                }
                 if (!folder.StartsWith(Path.GetTempPath()))
+                {
+                    Logger?.Warn("Temp folder is not under temp path: " + path);
                     return false;
+                }
+
                 DirectoryInfo di = new DirectoryInfo(folder);
                 if (di.Exists)
+                {
+                    Logger?.Trace("Deleting temp folder");
                     di.Delete(true);
+                }
+                else
+                    Logger?.Info("Temp folder does not exist");
                 return true;
             }
-            catch (Exception)
+            catch (Exception e)
             {
+                Logger?.Error("Error deleting temp folder: " + e.Message);
                 return false;
             }
         }
@@ -316,14 +380,18 @@ namespace SetonixUpdater.Download
                         bytesRead = httpStream.Read(byteBuffer, 0, BUFFER_SIZE);
                     }
                 }
-                catch (Exception ex) { Console.WriteLine(ex.ToString()); }
+                catch (Exception e) 
+                {
+                    Logger.Error("Error reading download stream: " + e.Message);
+                }
                 fileStream.Close();
                 httpStream.Close();
                 response.Close();
                 return true;
             }
-            catch (Exception)
+            catch (Exception e)
             {
+                Logger.Error("Error downloading file: " + e.Message);
                 return false;
             }
         }
@@ -341,16 +409,26 @@ namespace SetonixUpdater.Download
             XmlDocument doc = new XmlDocument();
             try
             {
+                Logger.Trace("Loading version file");
                 doc.Load(versionFile.FullName);
                 foreach (XmlNode node in doc.SelectNodes("/versions/version"))
                 {
+                    Logger.Trace("Found version");
                     string versionStr = node.GetAttributeValue("id", true);
+                    Logger.Debug("Version ID: " + versionStr);
                     string name = node.GetValue("name", "");
+                    Logger.Debug("Name: " + name);
                     DateTime releaseDate = node.GetValue("release-date", DateTime.MinValue, "yyyy-MM-dd");
+                    Logger.Debug("Release date: " + releaseDate);
                     string url = node.GetValue("url", "");
+                    Logger.Debug("URL: " + url);
                     Version version = Version.Parse(versionStr);
                     if (name.Length == 0 || releaseDate == DateTime.MinValue || url.Length == 0)
+                    {
+                        Logger.Warn("Invalid version: name=\"" + name + "\", releaseDate=\"" + releaseDate + "\", url=\"" + url + "\"");
                         return null;
+                    }
+                    Logger.Trace("Adding version");
                     versions.Add(new VersionInfo(version, name, releaseDate, url));
                 }
 
@@ -363,15 +441,23 @@ namespace SetonixUpdater.Download
                     if (newestDate == null || vi.ReleaseDate > newestDate)
                         newestDate = vi.ReleaseDate;
                 }
+                Logger.Debug("Highest version: " + highestVersion + " (date: " + highestVersion.ReleaseDate + ")");
+                Logger.Debug("Newest date: " + newestDate);
                 if (newestDate == highestVersion.ReleaseDate)
                     return highestVersion;
                 else
                     return null;
             }
-            catch (Exception)
+            catch (Exception e)
             {
+                Logger.Error("Error reading version file: " + e.Message);
                 return null;
             }
+        }
+
+        private static void CreateLogger()
+        {
+            Logger = new Slogger(Path.GetTempPath(), "setonix_updater.log") { LogLevel = LogLevel.Debug };
         }
 
         #endregion
