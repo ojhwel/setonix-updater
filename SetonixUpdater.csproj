@@ -147,8 +147,5 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup />
-  <ItemGroup>
-    <Content Include="Download\bp_versions_sample.xml" />
-  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

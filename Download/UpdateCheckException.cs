@@ -7,7 +7,9 @@ using System.Threading.Tasks;
 
 namespace SetonixUpdater.Download
 {
-    // TODO Comment
+    /// <summary>
+    ///  Thrown for error encountered during checking for an updated version.
+    /// </summary>
     public sealed class UpdateCheckException : Exception
     {
         public UpdateCheckException()
