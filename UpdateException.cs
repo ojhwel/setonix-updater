@@ -7,7 +7,9 @@ using System.Threading.Tasks;
 
 namespace SetonixUpdater
 {
-    // TODO Comment
+    /// <summary>
+    /// Thrown if an error occurred during the update.
+    /// </summary>
     internal class UpdateException : Exception
     {
         public UpdateException(string message) 

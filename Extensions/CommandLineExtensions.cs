@@ -6,9 +6,12 @@ using System.Threading.Tasks;
 
 namespace SetonixUpdater.Extensions
 {
-    // TODO Comments
     public static class CommandLineExtensions
     {
+        /// <summary>
+        /// Returns all arguments as a single string, separated by spaces.
+        /// </summary>
+        /// <param name="args">The arguments to concatenate.</param>
         public static string ConcatenateAll(this string[] args)
         {
             StringBuilder result = new StringBuilder();

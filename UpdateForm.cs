@@ -10,9 +10,12 @@ using System.Windows.Forms;
 
 namespace SetonixUpdater
 {
-    // TODO Comment
+    /// <summary>
+    /// The form showing the user the update progress.
+    /// </summary>
     internal partial class UpdateForm : Form
     {
+        // To allow calling SetFileName() one without updating the progress bar.
         private bool initialUpdate = true;
 
         public UpdateForm()
@@ -20,6 +23,12 @@ namespace SetonixUpdater
             InitializeComponent();
         }
 
+        /// <summary>
+        /// Displays the update progress form.
+        /// </summary>
+        /// <param name="title">The window title.</param>
+        /// <param name="message">The "please wait" message.</param>
+        /// <param name="tasks">The tasks to perform.</param>
         public void Show(string title, string message, int tasks)
         {
             Text = title;
@@ -31,6 +40,10 @@ namespace SetonixUpdater
             Show();
         }
 
+        /// <summary>
+        /// Updates the file name and increased the progress bar value.
+        /// </summary>
+        /// <param name="fileName">The file name to display.</param>
         public void SetFileName(string fileName)
         {
             fileLabel.Text = fileName;
@@ -38,6 +51,7 @@ namespace SetonixUpdater
                 progressBar.Increment(1);
             else
                 initialUpdate = false;
+            // TODO I'm not sure that does the trick. I've never seen progress past 10 %
             Application.DoEvents();
         }
     }

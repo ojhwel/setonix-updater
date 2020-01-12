@@ -14,7 +14,9 @@ using System.Windows.Forms;
 
 namespace SetonixUpdater
 {
-    // TODO Comment
+    /// <summary>
+    /// The main class.
+    /// </summary>
     static class Program
     {
         /// <summary>
@@ -26,6 +28,7 @@ namespace SetonixUpdater
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 
+            // Check command line arguments
             ArgumentResult arguments = CheckArguments(args);
             if (!arguments.IsValid)
             {
@@ -35,6 +38,7 @@ namespace SetonixUpdater
                 return;
             }
 
+            // Read the manifest
             string updatePath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             UpdateManifest manifest = null;
             try
@@ -52,6 +56,8 @@ namespace SetonixUpdater
             {
                 updateForm.Show(manifest.Strings["title"], manifest.Strings["wait"], manifest.Tasks.Count);
                 updateForm.SetFileName(TextResources.Preparing);
+
+                // Make sure the application has quit
                 try
                 {
                     Process appProcess = Process.GetProcessById(arguments.CallingProcessID);
@@ -76,6 +82,7 @@ namespace SetonixUpdater
                     // Nothing to do (the process was not found, which means the application is closed)
                 }
 
+                // Perform the update
                 Updater updater = new Updater(manifest.Tasks, updatePath, Path.GetDirectoryName(arguments.ApplicationPath), updateForm.SetFileName);
                 try
                 {
@@ -88,12 +95,17 @@ namespace SetonixUpdater
                     return;
                 }
 
+                // Restart the application (our work here is done)
                 Process.Start(arguments.ApplicationPath, arguments.GetAdditionalArgumentsAsString() + " " + 
                                                          Download.UpdateHelper.TempFolderCleanupArgument + updatePath);
                 Application.Exit();
             }
         }
 
+        /// <summary>
+        /// Returns the command line as a single string for display in an error message, i.e. return an "empty command line" text if the command line is empty.
+        /// </summary>
+        /// <param name="args">The command line arguments.</param>
         private static string GetDisplayCommandLine(string[] args)
         {
             bool anyText = false;
@@ -109,6 +121,11 @@ namespace SetonixUpdater
                 return TextResources.EmptyCommandLine;
         }
 
+        /// <summary>
+        /// Checks the command line arguments.
+        /// </summary>
+        /// <param name="args">The command line arguments.</param>
+        /// <returns>A new <c>ArgumentResult</c> instance.</returns>
         private static ArgumentResult CheckArguments(string[] args)
         {
             const int REQUIRED_ARGUMENTS = 2;
@@ -119,6 +136,7 @@ namespace SetonixUpdater
             string language = string.Empty;
             int languageIndex = -1;
 
+            // Find the optional language argument
             if (ok)
             {
                 for (int i = 0; i < args.Length; i++)
@@ -136,10 +154,11 @@ namespace SetonixUpdater
                         }
                         break;
                     }
-                // Note that if "/lang:xx" is not included, that's OK and language is an empty string
             }
 
             ok = ok && args.Length >= REQUIRED_ARGUMENTS;
+
+            // Application path
             if (ok)
                 try
                 {
@@ -153,10 +172,13 @@ namespace SetonixUpdater
                 {
                     ok = false;
                 }
+
+            // Return result
             if (ok)
             { 
                 ArgumentResult result = new ArgumentResult(callingProcessID, applicationPath, language);
 
+                // Additional argument passthrough
                 int addlArgsCount = args.Length - REQUIRED_ARGUMENTS - (languageIndex >= 0 ? 1 : 0);
                 if (addlArgsCount > 0)
                 { 
