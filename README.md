@@ -23,21 +23,17 @@ It's currently a work in progress.
 - Call `UpdateHelper.DownloadUpdate()`; this returns a `DirectoryInfo` instance pointing to a temp folder where the ZIP has been decompessed to
 - Start the update by calling `updateHelper.StartUpdate(System.Diagnostics.Process.GetCurrentProcess().Id, 
   System.Reflection.Assembly.GetExecutingAssembly().Location);`
-- Quit your application:
-  ```C#
-  Application.Exit();
-  return;
-  ```
-- If you add the line `args = UpdateHelper.HandleTempFolderCleanup(args)` to the startup code of your application before you start doing anything with the
-  command line arguments, the temp folder will be cleaned. (If you **don't** do this, you will find a `--setonix-cleanup` argument which 
-  `HandleTempFolderCleanup()` removes.)
+- Quit your application
 
 ### What Happens Then
 
 - Setonix Updater makes sure the process ID is not longer pointing to a running process. If it still does after a few seconds, you get a "Please close" message 
-  and can retry.
+  and can retry
 - All files in the `update.manifest` are copied from the temp folder to the application folder
 - Setonix Updater starts your application and quits
+  - An extra command line argument is sent to your application to allow cleaning up the temp folder. You can do this by adding the following statement to your
+    application: `args = UpdateHelper.HandleTempFolderCleanup(args);` This removes both the temp folder from the disk **and** the extra argument from `args`. 
+    (If you don't do this, your application will have to live with a `--setonix-cleanup` argument.)
 
 
 ## More Details
@@ -96,3 +92,10 @@ It also declares some bits of text for the updater window:
 - `title` - the window title
 - `wait` - a short message telling the user what's happening
 - `appname` - the name of your application, currently only used in a message box shown if the application is still running
+
+
+### Logging
+
+There is some rudimentary logging, which is always done to the system temp folder into a file called `setonix_updater_<date>.log`. The log level defaults to
+ERROR and can be set by placing a file called `setonix_loglevel.<loglevel>` where the extension is one of the following: `error`, `warn`, `info`, `debug`. If 
+there are multiple of these files, the most verbose log level wins.
